@@ -1,10 +1,10 @@
 const fs = require("fs").promises
 const path = require("path")
 
-const logDirectory = path.join(__dirname, "logs")
+const logDirectory = path.join(__dirname, "../logs")
 
 function logDirectoryForServer(server) {
-    return path.join(logDirectory, "server")
+    return path.join(logDirectory, server)
 }
 
 function isoTimestamp(date) {
