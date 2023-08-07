@@ -32,12 +32,14 @@ function logMsg(msg, status = null) {
     if (msg.content) {
         const username = msg.author.tag
         const guildName = msg.guild.name
+        const guildId = msg.guild.id
         const channelName = msg.channel.name
+        const channelId = msg.channel.id
         const date = msg.createdAt
 
         const prefix = status ? `[${status}] ` : ""
 
-        log.logChatMessage(guildName, channelName, username, date, prefix + msg.content)
+        log.logChatMessage(`${guildName}-${guildId}`, `${channelName}-${channelId}`, username, date, prefix + msg.content)
         .catch(err => {
             console.error(err)
         })
@@ -87,8 +89,25 @@ client.on("channelUpdate", (oldChannel, newChannel) => {
     }
 })
 
-client.on("voiceStateUpdate", voiceState => {
-    console.log(voiceState)   
+client.on("voiceStateUpdate", (oldVoiceState, newVoiceState) => {
+    const user = client.users.cache.get(newVoiceState.id)
+    if (newVoiceState.channelId == null && oldVoiceState.channelId != null) {
+        // user left
+        const channelId = oldVoiceState.channelId
+        if (channelId) {
+            const channel = client.channels.cache.get(channelId)
+            const guild = channel.guild
+            log.logMessage(`${guild.name}-${guild.id}`, `${channel.name}-${channel.id}`, new Date(), `* ${user.tag} left voice channel`)
+        }
+    } else if (newVoiceState.channelId != null && oldVoiceState.channelId == null) {
+        // user joined
+        const channelId = newVoiceState.channelId
+        if (channelId) {
+            const channel = client.channels.cache.get(channelId)
+            const guild = channel.guild
+            log.logMessage(`${guild.name}-${guild.id}`, `${channel.name}-${channel.id}`, new Date(), `* ${user.tag} joined voice channel`)
+        }
+    }
 })
 
 try {
